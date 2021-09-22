@@ -2,6 +2,7 @@ use bevy::input::system::exit_on_esc_system;
 use bevy::prelude::*;
 
 use res::ResourcePlugin;
+use crate::res::{TextureHandles, AtlasHandles, AudioHandles, FontHandles};
 
 mod consts;
 mod res;
@@ -16,8 +17,12 @@ fn main() {
         })
         .add_startup_system(setup.system())
         .add_plugins(DefaultPlugins)
-        // .add_plugin(ResourcePlugin)
+        .add_plugin(ResourcePlugin)
         .add_system(exit_on_esc_system.system())
+        .init_resource::<TextureHandles>()
+        .init_resource::<AtlasHandles>()
+        .init_resource::<AudioHandles>()
+        .init_resource::<FontHandles>()
         .run();
 }
 
@@ -27,7 +32,7 @@ fn setup(mut commands: Commands,
          // mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
-    let title_handle: Handle<Texture> = asset_server.load("drawable/ui.png");
+    // let title_handle: Handle<Texture> = asset_server.load("drawable/ui.png");
 
 
     // println!("{:?}",title);
