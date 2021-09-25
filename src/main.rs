@@ -2,10 +2,13 @@ use bevy::input::system::exit_on_esc_system;
 use bevy::prelude::*;
 
 use res::ResourcePlugin;
-use crate::res::{TextureHandles, AtlasHandles, AudioHandles, FontHandles};
+
+use crate::res::{AtlasHandles, AudioHandles, FontHandles, TextureHandles};
+use crate::ui::UiPlugin;
 
 mod consts;
 mod res;
+mod ui;
 
 fn main() {
     App::build()
@@ -18,6 +21,7 @@ fn main() {
         .add_startup_system(setup.system())
         .add_plugins(DefaultPlugins)
         .add_plugin(ResourcePlugin)
+        .add_plugin(UiPlugin)
         .add_system(exit_on_esc_system.system())
         .init_resource::<TextureHandles>()
         .init_resource::<AtlasHandles>()

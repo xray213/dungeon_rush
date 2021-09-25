@@ -3,7 +3,6 @@ use std::fs::File;
 use std::path::Path;
 
 use bevy::prelude::*;
-use bevy::render::texture::*;
 use bevy::utils::HashMap;
 use ron::de;
 use serde::Deserialize;
@@ -15,62 +14,26 @@ pub struct AtlasHandles {
 
 #[derive(Default)]
 pub struct TextureHandles {
-    handles: HashMap<String, Handle<Texture>>,
+    pub handles: HashMap<String, Handle<Texture>>,
 }
 
 #[derive(Default)]
 pub struct AudioHandles {
-    // handles: HashMap<String, Handle<Audio>>,
+    pub handles: HashMap<String, Handle<AudioSource>>,
 }
 
 #[derive(Default)]
 pub struct FontHandles {
-    handles: HashMap<String, Handle<Font>>,
+    pub handles: HashMap<String, Handle<Font>>,
 }
 
 #[derive(Deserialize)]
 pub struct AtlasInfo {
     name: String,
-    x: u32,
-    y: u32,
     width: u32,
     height: u32,
     column: u32,
-}
-
-//
-// fn spawn_title(mut commands: Commands, materials: Res<MaterialResource>) {
-//     commands
-//         .spawn_bundle(SpriteSheetBundle {
-//             texture_atlas: materials.title_texture.clone(),
-//             sprite: TextureAtlasSprite {
-//                 flip_x: true,
-//                 color: Color::rgb(1.0, 0.0, 0.0),
-//                 ..Default::default()
-//             },
-//             transform: Transform::from_scale(Vec3::splat(1.0)),
-//             ..Default::default()
-//         })
-//         .insert(Timer::from_seconds(0.05, true));
-// }
-
-fn animate_title(
-    texture_atlases: Res<Assets<TextureAtlas>>,
-    time: Res<Time>,
-    mut query: Query<(
-        Entity,
-        &mut Timer,
-        &mut TextureAtlasSprite,
-        &Handle<TextureAtlas>,
-    )>,
-) {
-    for (_entity, mut timer, mut sprite, texture_atlas_handle) in query.iter_mut() {
-        timer.tick(time.delta());
-        if timer.finished() {
-            let texture_atlas = texture_atlases.get(texture_atlas_handle).unwrap();
-            sprite.index = (sprite.index + 1) % texture_atlas.len() as u32;
-        }
-    }
+    row: u32,
 }
 
 pub struct ResourcePlugin;
@@ -102,14 +65,11 @@ fn load_material(mut commands: Commands,
         let f = File::open(name).unwrap();
         let ron: AtlasInfo = de::from_reader(f).unwrap();
         let texture_handle = asset_server.load(format!("drawable/{}.png", ron.name).as_str());
-        // println!("{}",format!("drawable/{}.png", ron.name));
         if ron.column == 1 {
             texture_handles.handles.insert(ron.name, texture_handle);
         } else {
-            let atlas_handle = texture_atlas.add(TextureAtlas::from_grid(texture_handle, Vec2::new(ron.width as f32, ron.height as f32), ron.column as usize, 1));
+            let atlas_handle = texture_atlas.add(TextureAtlas::from_grid(texture_handle, Vec2::new(ron.width as f32, ron.height as f32), ron.column as usize, ron.row as usize));
             atlas_handles.handles.insert(ron.name, atlas_handle);
         }
-        println!("{}", texture_handles.handles.len());
-        println!("{}", atlas_handles.handles.len());
     }
 }

@@ -1,1 +1,1 @@
-(name:"wall_side_front_left",x:0,y:144,width:16,height:16,column:1)
+(name:"wall_side_front_left",width:16,height:16,column:1,row:1)

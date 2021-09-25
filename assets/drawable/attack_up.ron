@@ -1,1 +1,1 @@
-(name:"attack_up",x:0,y:0,width:32,height:20,column:4)
+(name:"attack_up",width:32,height:20,column:4,row:1)
