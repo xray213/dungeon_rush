@@ -7,6 +7,8 @@ use bevy::utils::HashMap;
 use ron::de;
 use serde::Deserialize;
 
+use crate::status::GameStatue;
+
 #[derive(Default)]
 pub struct AtlasHandles {
     handles: HashMap<String, Handle<TextureAtlas>>,
@@ -24,7 +26,7 @@ pub struct AudioHandles {
 
 #[derive(Default)]
 pub struct FontHandles {
-    pub handles: HashMap<String, Handle<Font>>,
+    pub font_handle: Handle<Font>,
 }
 
 #[derive(Deserialize)]
@@ -40,9 +42,9 @@ pub struct ResourcePlugin;
 
 impl Plugin for ResourcePlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app
-            .add_startup_system(load_material.system());
-        // .add_system(animate_title.system());
+        app.add_system_set(
+            SystemSet::on_enter(GameStatue::Load).with_system(load_material.system())
+        );
     }
 }
 
@@ -50,7 +52,11 @@ fn load_material(mut commands: Commands,
                  asset_server: Res<AssetServer>,
                  mut texture_handles: ResMut<TextureHandles>,
                  mut atlas_handles: ResMut<AtlasHandles>,
-                 mut texture_atlas: ResMut<Assets<TextureAtlas>>) {
+                 mut texture_atlas: ResMut<Assets<TextureAtlas>>,
+                 mut font_handles: ResMut<FontHandles>,
+                 mut audio_handles: ResMut<AudioHandles>,
+                 audio: Res<Audio>,
+                 mut state: ResMut<State<GameStatue>>) {
     let ron_path = Path::new("./assets/drawable/");
     let paths = fs::read_dir(&ron_path).unwrap();
     let names = paths.filter_map(|entry| {
@@ -72,4 +78,26 @@ fn load_material(mut commands: Commands,
             atlas_handles.handles.insert(ron.name, atlas_handle);
         }
     }
+    //加载字体
+    font_handles.font_handle = asset_server.load("font/m5x7.ttf");
+
+    //加载声音
+    let audio_path = "./assets/audio/";
+    let audio_paths = fs::read_dir(audio_path).unwrap();
+    let audio_names = audio_paths
+        .filter_map(|entity| entity
+            .ok()
+            .and_then(|f| f.path().to_str().map(|s| String::from(s)))
+        )
+        .collect::<Vec<String>>();
+    // for audio_name in audio_names.iter() {
+    //     let p = Path::new(audio_name);
+    //     if let Some(_ext) = p.extension() {
+    //         let key = p.file_stem().unwrap().to_str().unwrap().to_string();
+    //         let audio_handle = asset_server.load(format!("audio/{:?}", p.file_name().unwrap().to_str().unwrap()).as_str());
+    //         audio_handles.handles.insert(key, audio_handle);
+    //     }
+    // }
+    // audio.play_looped(asset_server.load("audio/human_death.wav"));
+    let _ = state.replace(GameStatue::MainMenu);
 }

@@ -1,12 +1,15 @@
 use bevy::prelude::*;
 
 use crate::res::{AtlasHandles, TextureHandles};
+use crate::status::GameStatue;
 
 pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_startup_system(spawn_ui.system());
+        app.add_system_set(
+            SystemSet::on_enter(GameStatue::MainMenu).with_system(spawn_ui.system())
+        );
     }
 }
 
@@ -17,11 +20,10 @@ fn spawn_ui(mut commands: Commands,
             mut materials: ResMut<Assets<ColorMaterial>>,
             asset_server: Res<AssetServer>,
 ) {
-    // let handle=asset_server.load("drawable/wizzard_m_hit_anim.png");
-    let h2=texture_handles.handles.get_mut("wizzard_m_hit_anim").unwrap();
+    let handle = texture_handles.handles.get("wizzard_m_hit_anim").unwrap();
     commands.spawn_bundle(
         SpriteBundle {
-            material: materials.add(h2.clone().into()),
+            material: materials.add(handle.clone().into()),
             ..Default::default()
         }
     );
