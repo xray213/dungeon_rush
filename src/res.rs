@@ -43,30 +43,31 @@ pub struct ResourcePlugin;
 impl Plugin for ResourcePlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.add_system_set(
-            SystemSet::on_enter(GameStatue::Load).with_system(load_material.system())
+            SystemSet::on_enter(GameStatue::Load).with_system(load_material.system()),
         );
     }
 }
 
-fn load_material(mut commands: Commands,
-                 asset_server: Res<AssetServer>,
-                 mut texture_handles: ResMut<TextureHandles>,
-                 mut atlas_handles: ResMut<AtlasHandles>,
-                 mut texture_atlas: ResMut<Assets<TextureAtlas>>,
-                 mut font_handles: ResMut<FontHandles>,
-                 mut audio_handles: ResMut<AudioHandles>,
-                 audio: Res<Audio>,
-                 mut state: ResMut<State<GameStatue>>) {
+fn load_material(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut texture_handles: ResMut<TextureHandles>,
+    mut atlas_handles: ResMut<AtlasHandles>,
+    mut texture_atlas: ResMut<Assets<TextureAtlas>>,
+    mut font_handles: ResMut<FontHandles>,
+    mut audio_handles: ResMut<AudioHandles>,
+    mut state: ResMut<State<GameStatue>>,
+) {
     let ron_path = Path::new("./assets/drawable/");
     let paths = fs::read_dir(&ron_path).unwrap();
-    let names = paths.filter_map(|entry| {
-        entry.ok().and_then(|f|
-            match f.path().extension() {
+    let names = paths
+        .filter_map(|entry| {
+            entry.ok().and_then(|f| match f.path().extension() {
                 Some(ext) if ext.eq("ron") => f.path().to_str().map(|s| String::from(s)),
-                _ => None
-            }
-        )
-    }).collect::<Vec<String>>();
+                _ => None,
+            })
+        })
+        .collect::<Vec<String>>();
     for name in names.iter() {
         let f = File::open(name).unwrap();
         let ron: AtlasInfo = de::from_reader(f).unwrap();
@@ -74,7 +75,12 @@ fn load_material(mut commands: Commands,
         if ron.column == 1 {
             texture_handles.handles.insert(ron.name, texture_handle);
         } else {
-            let atlas_handle = texture_atlas.add(TextureAtlas::from_grid(texture_handle, Vec2::new(ron.width as f32, ron.height as f32), ron.column as usize, ron.row as usize));
+            let atlas_handle = texture_atlas.add(TextureAtlas::from_grid(
+                texture_handle,
+                Vec2::new(ron.width as f32, ron.height as f32),
+                ron.column as usize,
+                ron.row as usize,
+            ));
             atlas_handles.handles.insert(ron.name, atlas_handle);
         }
     }
@@ -85,19 +91,20 @@ fn load_material(mut commands: Commands,
     let audio_path = "./assets/audio/";
     let audio_paths = fs::read_dir(audio_path).unwrap();
     let audio_names = audio_paths
-        .filter_map(|entity| entity
-            .ok()
-            .and_then(|f| f.path().to_str().map(|s| String::from(s)))
-        )
+        .filter_map(|entity| {
+            entity
+                .ok()
+                .and_then(|f| f.path().to_str().map(|s| String::from(s)))
+        })
         .collect::<Vec<String>>();
-    // for audio_name in audio_names.iter() {
-    //     let p = Path::new(audio_name);
-    //     if let Some(_ext) = p.extension() {
-    //         let key = p.file_stem().unwrap().to_str().unwrap().to_string();
-    //         let audio_handle = asset_server.load(format!("audio/{:?}", p.file_name().unwrap().to_str().unwrap()).as_str());
-    //         audio_handles.handles.insert(key, audio_handle);
-    //     }
-    // }
-    // audio.play_looped(asset_server.load("audio/human_death.wav"));
+    for audio_name in audio_names.iter() {
+        let p = Path::new(audio_name);
+        if let Some(_ext) = p.extension() {
+            let key = p.file_stem().unwrap().to_str().unwrap().to_string();
+            let audio_handle = asset_server
+                .load(format!("audio/{}", p.file_name().unwrap().to_str().unwrap()).as_str());
+            audio_handles.handles.insert(key, audio_handle);
+        }
+    }
     let _ = state.replace(GameStatue::MainMenu);
 }

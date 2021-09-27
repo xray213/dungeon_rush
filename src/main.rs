@@ -1,6 +1,5 @@
 use bevy::input::system::exit_on_esc_system;
 use bevy::prelude::*;
-// use bevy_kira_audio::{Audio, AudioChannel, AudioPlugin, AudioSource};
 
 use crate::res::{AtlasHandles, AudioHandles, FontHandles, ResourcePlugin, TextureHandles};
 use crate::status::GameStatue;
@@ -35,9 +34,10 @@ fn main() {
 fn setup(mut commands: Commands,
          asset_server: Res<AssetServer>,
          audio: Res<Audio>,
+         mut audio_handles: ResMut<AudioHandles>,
          // mut assets: ResMut<Assets<Texture>>,
          // mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
-    audio.play(asset_server.load("audio/audio.mp3"));
+    // audio.play(audio_handles.handles.get("bg1").unwrap().clone());
 }
